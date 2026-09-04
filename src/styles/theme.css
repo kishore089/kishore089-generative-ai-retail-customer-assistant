@@ -1,0 +1,104 @@
+/**
+ * theme.css — Design tokens for the Generative AI Retail Customer Support Center.
+ *
+ * Tailwind CSS v4 (CSS-first configuration, no tailwind.config.js) + HeroUI v3.
+ * Enterprise blue-and-white aesthetic (Amazon Customer Support / Amazon Q Business),
+ * with light and dark modes. Dark mode is driven by a `.dark` class on the root element.
+ *
+ * NOTE: This file must be imported by the application entry (see main.tsx, task 14.2)
+ * for the tokens and base styles to apply.
+ */
+
+@import "tailwindcss";
+@import "@heroui/styles";
+
+/* Enable class-based dark mode: `dark:` utilities activate under any `.dark` ancestor. */
+@custom-variant dark (&:is(.dark *));
+
+/* -------------------------------------------------------------------------- */
+/* Design tokens — exposed to Tailwind utilities via the v4 CSS-first @theme.  */
+/* -------------------------------------------------------------------------- */
+@theme {
+  /* Primary blue scale (brand = 500 #2563eb). Full 50–900 ramp. */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #2563eb;
+  --color-primary-600: #2052db;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary: #2563eb;
+
+  /* Neutral gray (slate) scale. 200 = default borders, 900 = dark surface. */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* Semantic colors. */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+
+  /* Typography — Inter with a robust system-ui fallback stack. */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+
+  /* Radius scale. */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Surface tokens — light (default) and dark. Consumed by base styles and      */
+/* components that need background/elevated/border/text semantics.             */
+/* -------------------------------------------------------------------------- */
+:root {
+  /* Light surfaces */
+  --surface-bg: #ffffff;
+  --surface-elevated: #f8fafc;
+  --surface-border: #e2e8f0;
+
+  /* Light text */
+  --surface-text: #0f172a;
+  --surface-text-muted: #64748b;
+}
+
+.dark {
+  /* Dark surfaces */
+  --surface-bg: #0f172a;
+  --surface-elevated: #1e293b;
+  --surface-border: #334155;
+
+  /* Dark text */
+  --surface-text: #f8fafc;
+  --surface-text-muted: #94a3b8;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Base styles — apply surface + typography defaults. Light/dark switch via     */
+/* the `.dark` class toggling the surface custom properties above.             */
+/* -------------------------------------------------------------------------- */
+html {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--surface-bg);
+  color: var(--surface-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
