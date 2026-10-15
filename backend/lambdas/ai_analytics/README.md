@@ -1,7 +1,9 @@
 # AIAnalytics Lambda
 
-**Evidence:** The project context refers to an AIAnalytics / analytics Lambda supporting the backend, and the frontend expects an `/analytics` API area.
+A reconstructed handler is available at lambda_function.py. It returns the summary, conversation, resolution, escalation, sentiment, intents, and recentConversations fields expected by src/services/analytics.service.ts.
 
-Expected responsibility: return dashboard metrics and retail activity/analytics for the admin dashboard.
+Required configuration:
+- ANALYTICS_TABLE: DynamoDB table containing one item per recorded interaction.
+- Records are expected to optionally contain success, resolved, escalated, sentiment, intent, responseTimeMs, durationSeconds, completed, and timestamp fields.
 
-Recovery requirements: export the deployed function and confirm whether it reads DynamoDB, aggregates API results, or uses another data source. Preserve the existing response fields expected by the frontend analytics service. Do not invent table names or metric formulas.
+The original analytics table and metric definitions were not preserved. The default ConversationAnalytics table is only a placeholder; configure the actual data source before testing. This handler does not create analytics events, so another component must write them.
