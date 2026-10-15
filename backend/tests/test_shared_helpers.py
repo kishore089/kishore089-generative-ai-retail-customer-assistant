@@ -37,5 +37,12 @@ class SharedHelperTests(unittest.TestCase):
         self.assertEqual(result["response"]["function"],"lookup")
         self.assertIn("TEXT",result["response"]["functionResponse"]["responseBody"])
 
+    def test_openapi_action_group_response_shape(self):
+        result=bedrock_agent_response({"actionGroup":"Retail","apiPath":"/orders","httpMethod":"GET"},"{}")
+        self.assertEqual(result["response"]["apiPath"],"/orders")
+        self.assertEqual(result["response"]["httpStatusCode"],200)
+        self.assertEqual(result["response"]["responseBody"]["application/json"]["body"],"{}")
+        self.assertNotIn("apiResponse",result["response"])
+
 if __name__ == "__main__":
     unittest.main()
