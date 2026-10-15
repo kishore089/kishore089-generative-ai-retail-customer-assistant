@@ -1,113 +1,59 @@
 # Retail AI Contact Center — AWS Architecture
 
-This diagram documents the architecture shown in the project's updated architecture image. It describes the intended design; it is not proof that every resource is deployed.
+This is the versioned architecture reference for the **Generative AI Retail Customer Assistant**. The diagram is a repository-maintained redraw of the latest architecture image supplied for the project.
 
-## Architecture diagram
+![Retail AI Contact Center — AWS Architecture](architecture.svg)
 
-~~~mermaid
-flowchart LR
-  subgraph Client["Client Layer"]
-    Users["Customer / Admin Users"]
-    Web["React + Vite Frontend<br/>Customer Dashboard · Admin Dashboard · AI Assistant"]
-    Users --> Web
-  end
+## Architecture layers
 
-  subgraph Conversation["Conversation Layer"]
-    Connect["Amazon Connect<br/>Contact Flow / Queues / Routing"]
-    Lex["Amazon Lex V2<br/>RetailShoppingAssistant"]
-    Bridge["RetailConnectBridge Lambda"]
-    Escalation["Escalation Lambda<br/>Human-agent handoff"]
-    Connect --> Lex
-    Lex <--> Bridge
-    Connect -. Escalation flow .-> Escalation
-  end
+### 1. Client layer
+- React + Vite web application
+- Customer dashboard
+- Admin dashboard
+- AI Assistant
+- Amazon Connect as the voice/contact-center entry point
 
-  APIGW["Amazon API Gateway"]
+### 2. Conversation layer
+- Amazon Connect contact flow: welcome prompt, Lex V2, bridge, AI response, error prompt, and disconnect
+- Amazon Lex V2 bot: RetailShoppingAssistant
+- 20 intents: ExpressDelivery, CancelOrder, ExchangePolicy, CustomerProfile, PaymentMethods, ProductSearch, ContactSupport, OrderStatus, ShippingPolicy, ShippingCost, StoreLocation, FallbackIntent, BusinessHours, Offers, DeliveryTime, Exit, ReturnPolicy, Warranty, Greeting, LiveAgent
+- RetailConnectBridge Lambda
+- Escalation Lambda
 
-  subgraph AI["Amazon Bedrock AI Layer"]
-    Agent["Amazon Bedrock Agent"]
-    Memory["Agent Memory"]
-    Actions["Agent Action Groups<br/>Invoke backend functions"]
-    Guardrails["Bedrock Guardrails"]
-    Agent <--> Memory
-    Agent --> Actions
-    Agent --> Guardrails
-  end
+### 3. Amazon Bedrock AI layer
+- Bedrock Agent (Classic)
+- Agent Memory / conversation context
+- Agent Action Groups invoking backend functions
+- Bedrock Guardrails for content filters, PII, and topics
 
-  subgraph RAG["Knowledge Base / RAG"]
-    Docs["Amazon S3<br/>Retail documents"]
-    KB["Amazon Bedrock Knowledge Base"]
-    Embeddings["Titan Text Embeddings V2"]
-    Vectors["Amazon S3 Vectors"]
-    Docs --> KB
-    KB --> Embeddings
-    Embeddings --> Vectors
-  end
+### 4. Knowledge Base / RAG
+- Amazon S3 for retail documents
+- Amazon Bedrock Knowledge Base
+- Titan Text Embeddings V2
+- Amazon S3 Vectors as the vector store
 
-  subgraph Backend["Retail Backend Lambda Functions"]
-    Login["User Login Lambda"]
-    Customer["Customer Lookup Lambda"]
-    Product["Product Lookup Lambda"]
-    Inventory["Inventory Lookup Lambda"]
-    Payment["Payment Lookup Lambda"]
-    Returns["Return Lookup Lambda"]
-    Support["Support Ticket Lookup Lambda"]
-    Order["Order Lookup / order utilities"]
-    Analytics["AIAnalytics Lambda"]
-    Other["Other utility functions"]
-  end
+### 5. Retail backend and operational data
+- Amazon API Gateway
+- Lambda functions for user login, customer, product, inventory, order, payment, return, support, analytics, cancellation, and other utility operations
+- Amazon DynamoDB operational data: Users, Customers, Orders, Returns, Payments, SupportTickets, Products, and Inventory
 
-  subgraph Data["Amazon DynamoDB — Operational Data"]
-    UsersDB[(Users)]
-    CustomersDB[(Customers)]
-    OrdersDB[(Orders)]
-    ReturnsDB[(Returns)]
-    PaymentsDB[(Payments)]
-    SupportDB[(SupportTickets)]
-    ProductsDB[(Products)]
-    InventoryDB[(Inventory)]
-  end
+### Optional / future enhancements shown in the supplied diagram
+- Amazon Connect Contact Lens
+- Amazon CloudWatch
+- Amazon Cognito
+- AWS IAM
+- Amazon SNS / SES
 
-  Web --> APIGW
-  APIGW --> Backend
-  Bridge <--> Agent
-  Agent <--> KB
-  Actions --> Backend
-  Backend <--> Data
+## Flow legend
+- **Conversation flow:** the web/voice conversation moves between the customer, Connect, Lex, and the bridge.
+- **AI/agent flow:** the bridge invokes the Bedrock Agent; the agent uses memory, action groups, and guardrails.
+- **Backend data flow:** Action Groups invoke Lambda functions that access operational records.
+- **Knowledge flow:** the agent retrieves documented retail content through the Knowledge Base.
+- **Escalation flow:** the contact flow follows the escalation path when configured.
+- **Web API flow:** the frontend calls API Gateway routes.
 
-  subgraph Future["Optional / Future Enhancements"]
-    ContactLens["Amazon Connect Contact Lens"]
-    CloudWatch["Amazon CloudWatch"]
-    Cognito["Amazon Cognito"]
-    IAM["AWS IAM"]
-    SNS["Amazon SNS / SES"]
-  end
-
-  Web -. Authentication .-> Cognito
-~~~
-
-## Component responsibilities
-
-- React + Vite: customer/admin interface, dashboards, order/payment/return pages, and AI Assistant.
-- API Gateway: HTTP entry point for frontend backend calls.
-- Lambda: serverless request handlers, Bedrock Action Group tools, analytics, bridge, and escalation workflows.
-- DynamoDB: operational records for users, customers, orders, returns, payments, support tickets, products, and inventory.
-- Amazon Connect + Lex V2: voice contact flow and intent capture.
-- RetailConnectBridge: passes conversational requests to the Bedrock Agent and returns responses in the expected channel format.
-- Bedrock Agent: coordinates response generation, memory, action execution, and knowledge retrieval.
-- Bedrock Knowledge Base: retrieves retail policy documents stored in S3; Titan Text Embeddings V2 and S3 Vectors support semantic retrieval.
-- Guardrails: configured controls for content and sensitive-information handling.
-- Escalation Lambda: supports routing a conversation to human assistance.
-
-## Lex intents
-
-The updated architecture image lists 20 intents: ExpressDelivery, CancelOrder, ExchangePolicy, CustomerProfile, PaymentMethods, ProductSearch, ContactSupport, OrderStatus, ShippingPolicy, ShippingCost, StoreLocation, FallbackIntent, BusinessHours, Offers, DeliveryTime, Exit, ReturnPolicy, Warranty, Greeting, and LiveAgent.
-
-Verify intent availability against the deployed Lex bot version and locale.
-
-## Architecture notes
-
-- The image includes User Login, Customer Lookup, Product Lookup, Inventory Lookup, Payment Lookup, Return Lookup, Support Ticket Lookup, and Other Utility Lambda. Historical progress reports also explicitly identify Order Lookup, RetailConnectBridge, and EscalationLambda.
-- AIAnalytics, customer profile/search, order-status update, and website Lex API are included in the repository inventory because frontend code or project context references them. Verify deployed function boundaries before treating each as a separate Lambda.
-- Cognito, CloudWatch, Contact Lens, IAM, and SNS/SES are marked optional/future in the diagram.
-- The project has also explored AgentCore/Gateway work. Keep those experiments documented separately from this Bedrock Agent + Lex/Connect architecture unless the deployment is intentionally migrated.
+## Important implementation notes
+- This diagram represents the intended design, not proof that every service or connection is deployed and working.
+- The latest supplied architecture shows Amazon S3 Vectors. Earlier project notes mention OpenSearch Serverless; the newer architecture is the current design reference.
+- Agent Classic Action Group schemas, Lambda mappings, API Gateway routes, IAM policies, Cognito authorizers, and Connect transfer behavior must be verified against the actual AWS environment.
+- The exact original Lambda source was lost. The code in backend/lambdas/ is reconstructed and must be validated before deployment.
