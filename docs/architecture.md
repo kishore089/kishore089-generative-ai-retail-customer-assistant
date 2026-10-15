@@ -1,5 +1,9 @@
 # Retail AI Contact Center — AWS Architecture
 
+![Updated AWS architecture](architecture.svg)
+
+[Agent Classic master prompt — Product Routing v5.0](agent-classic-master-prompt.md)
+
 This diagram documents the architecture shown in the project's updated architecture image. It describes the intended design; it is not proof that every resource is deployed.
 
 ## Architecture diagram
