@@ -115,10 +115,7 @@ def bedrock_agent_response(event: dict, result_text: str, session_attributes: di
             "apiPath": event.get("apiPath"),
             "httpMethod": event.get("httpMethod", "GET"),
             "httpStatusCode": 200,
-            "apiResponse": {
-                "httpStatusCode": 200,
-                "responseBody": {"application/json": {"body": result_text}},
-            },
+            "responseBody": {"application/json": {"body": result_text}},
         }
     else:
         response_obj = {
