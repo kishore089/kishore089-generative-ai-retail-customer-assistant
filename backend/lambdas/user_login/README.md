@@ -1,7 +1,5 @@
-# User Login Lambda
+# User Login / Identity Lookup Lambda
 
-The updated architecture image shows a User Login Lambda. Earlier project context also mentions a CustomerLoginTool target, but it is not confirmed whether these are the same deployed function.
+A reconstructed identity helper is available at lambda_function.py. It reads claims from a trusted API Gateway authorizer context and returns minimal user identity fields.
 
-The frontend has Cognito authentication modules under src/services/auth/ and src/config/amplify.ts. Do not implement password validation or store passwords in this Lambda unless the deployed design explicitly requires a secure Cognito-supported flow.
-
-Recovery: export the deployed handler and verify its responsibility, event contract, identity-provider integration, authorization, and response fields. Never commit tokens, secrets, or real user data.
+The frontend also integrates Amazon Cognito. This handler does not authenticate passwords and should not replace Cognito sign-in. Verify whether the architecture's User Login Lambda and prior CustomerLoginTool target refer to this same function before wiring it into any API or Agent Action Group.
