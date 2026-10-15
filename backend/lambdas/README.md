@@ -1,32 +1,31 @@
-# Lambda inventory and source recovery
+# Lambda inventory
 
-This inventory separates explicitly named historical functions from backend API responsibilities whose deployed Lambda boundaries still need verification.
+This directory separates function names explicitly documented in project reports from backend API responsibilities that still need verification against AWS.
 
 ## Explicitly named in project records
+- RetailOrderLookup
 - RetailCustomerLookup
 - RetailProductLookup
-- RetailOrderLookup
 - RetailInventoryLookup
 - RetailPaymentLookup
 - RetailReturnLookup
 - RetailSupportLookup
-- Retailcancelorder (also referenced as RetailCancelOrderTool)
 - RetailConnectBridge
 - EscalationLambda
-- CustomerLoginTool (gateway/action target; verify whether this is a Lambda and its exact purpose)
-- AIAnalytics / analytics Lambda (mentioned in project context; recover exact deployed function name)
+- Retailcancelorder / RetailCancelOrderTool (exact deployed name must be verified)
 
-## Backend API responsibilities also present in project records/frontend
-- Customer profile API (`GET /customer`)
-- Admin customer search (`GET /customer-search`)
-- Order status update (`PUT /orders/{OrdersID}/status`)
-- Lex web-chat API (`POST /lex`)
-- Analytics API (`/analytics`)
+The updated architecture also shows User Login Lambda and Other Utility Lambda. The project context mentions AIAnalytics and CustomerLoginTool; verify their exact deployed names and whether CustomerLoginTool is the same as User Login Lambda.
 
-These responsibilities may be handled by existing shared Lambda functions rather than one Lambda per endpoint. Do not count them as separate deployed functions until verified in AWS API Gateway integrations / Bedrock Gateway.
+## Additional API responsibilities referenced by the frontend
+- Customer profile: GET /customer
+- Admin customer search: GET /customer-search
+- Order status update: PUT /orders/{OrdersID}/status
+- Website Lex chat: POST /lex
+- Analytics: GET /analytics
 
-## Not counted as a Lambda without confirmation
-- `RetailKnowledgeBase`: prior records identify this as a Gateway target, but it may represent a Knowledge Base integration rather than a Lambda.
-- `RetailCustomerTool`, `RetailOrderTool`, `RetailProductTool`, `RetailInventoryTool`, `RetailPaymentTool`, `RetailReturnTool`, and `SupportTicket`: these are Gateway/Action Group target names; they may map to the explicit lookup Lambdas above rather than separate functions.
+These may be implemented by existing Lambda functions rather than separate functions. Do not create duplicates until the API Gateway integration mapping is checked.
 
-Export deployed code/configuration before implementing or deploying replacements.
+## Gateway/Action Group targets are not necessarily Lambda names
+RetailKnowledgeBase, RetailCustomerTool, RetailOrderTool, RetailProductTool, RetailInventoryTool, RetailPaymentTool, RetailReturnTool, and SupportTicket may be target/schema names. Confirm the real integration target before adding a new function.
+
+The original handler source is not currently restored in this repository. See ../../docs/lambda-inventory.md for the recovery checklist.
