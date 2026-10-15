@@ -1,3 +1,10 @@
-# Cancel-order Lambda
+# Cancel Order Lambda
 
-Expected responsibility: cancel an order only when its current business status and customer authorization permit it. Confirm the actual primary key, status field, allowed transitions, API contract, and audit behavior before implementing or deploying changes.
+A reconstructed handler is available at lambda_function.py. It expects an order ID and updates the configured order status field to Cancelled.
+
+Configuration:
+- ORDERS_TABLE (defaults to Ordersai based on the Day 5 report)
+- ORDER_PRIMARY_KEY (defaults to OrdersID)
+- ORDER_STATUS_FIELD (defaults to OrderStatus)
+
+The original order schema, cancellation policy, and authorization rules were lost. The current implementation has basic status checks but must not be deployed publicly until caller authorization, valid status transitions, and conditional writes are verified.
