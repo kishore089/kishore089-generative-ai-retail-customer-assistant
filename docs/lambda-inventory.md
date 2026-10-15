@@ -1,54 +1,40 @@
 # Lambda inventory and recovery plan
 
-This inventory consolidates names and responsibilities found in the updated architecture, project progress reports, and frontend service code. It is not a verified export of the current AWS Lambda inventory.
+This inventory combines the updated architecture image, project progress reports, frontend API references, and prior project context. It is not an export of deployed AWS Lambda configuration. See [reconstruction verification](reconstruction-verification.md) for evidence levels and unresolved assumptions.
 
-## Functions explicitly documented in progress reports
+## Confirmed in progress reports
 
-| Function | Evidence / responsibility |
+| Function/category | Evidence |
 |---|---|
-| RetailOrderLookup | Created and tested with the Ordersai DynamoDB table in the Day 5 report. |
-| RetailCustomerLookup | Customer lookup Action Group. |
-| RetailProductLookup | Product lookup Action Group. |
-| RetailInventoryLookup | Inventory lookup Action Group. |
-| RetailPaymentLookup | Payment lookup Action Group. |
-| RetailReturnLookup | Return lookup Action Group. |
-| RetailSupportLookup | Support-ticket lookup Action Group. |
-| RetailConnectBridge | Invokes the Bedrock Agent; validated in Day 8 and Day 9 reports. |
-| EscalationLambda | Created and tested in the Day 9 report. |
+| RetailOrderLookup | Day 5 report: created and tested against Ordersai; OrderLookup Action Group created. |
+| RetailCustomerLookup | Day 6/7 reports: customer lookup Action Group tested. |
+| RetailProductLookup | Day 6/7 reports: product lookup Action Group tested. |
+| RetailInventoryLookup | Day 6/7 reports: inventory lookup Action Group tested; Day 4 describes stock/item lookup. |
+| RetailPaymentLookup | Day 6/7 reports: payment lookup Action Group tested. |
+| RetailReturnLookup | Day 6/7 reports: return lookup Action Group tested. |
+| RetailSupportLookup | Day 6/7 reports: support-ticket lookup Action Group tested. |
+| RetailConnectBridge | Day 8/9 reports: invokes Bedrock Agent and returns AI response. |
+| EscalationLambda | Day 9 report: created and tested; full live transfer behavior is not specified. |
 
-The Day 6/7 reports document the seven lookup functions. The architecture image additionally shows a User Login Lambda and Other Utility Lambda.
+The Day 5 report lists Customers, Products, Orders, Inventory, Payments, Returns, and SupportTickets as created DynamoDB tables. It separately says RetailOrderLookup used Ordersai. Do not silently assume Ordersai and Orders are the same table.
 
-## Additional functions or API responsibilities referenced elsewhere
+## Responsibilities also referenced in the latest architecture/frontend
 
-| Name / responsibility | Evidence | What must be verified |
+| Function or responsibility | Evidence | Status |
 |---|---|---|
-| AIAnalytics | Frontend has src/services/analytics.service.ts calling /analytics; project context refers to an analytics Lambda. | Exact deployed function name, data source, metric definitions, and API integration. |
-| User Login / CustomerLoginTool | Architecture shows User Login Lambda; prior Gateway context mentions CustomerLoginTool. | Whether these are the same deployed function and its identity-resolution contract. |
-| Customer Profile | Frontend GET /customer. | Whether it is RetailCustomerLookup or a separate API Lambda. |
-| Customer Search | Frontend GET /customer-search; prior context says the endpoint was implemented. | Exact Lambda integration and authorization. |
-| Order Status Update | Frontend PUT /orders/{OrdersID}/status. | Separate function or operation in a broader order Lambda. |
-| Website Lex API | Frontend POST /lex. | Separate handler or route to another function. |
-| Cancel Order | Architecture intent and prior project context mention cancellation; previous notes refer to Retailcancelorder / RetailCancelOrderTool. | Exact deployed name, key schema, status transitions, and authorization. |
-| Other Utility Lambda | Shown in the architecture image. | Actual name and responsibility. |
+| User Login Lambda | Latest architecture image | Function name/contract not recovered |
+| AIAnalytics | Frontend /analytics service and prior context | Data source/formulas unknown |
+| Other Utility Lambda | Latest architecture image | Name/behavior unspecified |
+| Customer Profile | Frontend GET /customer | Could share Customer Lookup Lambda |
+| Customer Search | Frontend GET /customer-search | Prior context says endpoint implemented; current integration unknown |
+| Order Status Update | Frontend PUT /orders/{OrdersID}/status | Could be an operation in an order handler |
+| Website Lex Chat API | Frontend POST /lex | May be a separate handler or route to an existing bridge |
+| Cancel Order | Latest architecture includes CancelOrder intent; prior context refers to Retailcancelorder / RetailCancelOrderTool | Exact deployed name/schema unknown |
 
-## Gateway / Action Group names that are not automatically separate Lambdas
+## Not automatically separate Lambda functions
 
-Names such as RetailKnowledgeBase, RetailCustomerTool, RetailOrderTool, RetailProductTool, RetailInventoryTool, RetailPaymentTool, RetailReturnTool, and SupportTicket may be target names or schemas rather than distinct Lambda functions. Confirm actual targets before creating duplicate source folders.
+Gateway/Action Group labels such as RetailKnowledgeBase, RetailCustomerTool, RetailOrderTool, RetailProductTool, RetailInventoryTool, RetailPaymentTool, RetailReturnTool, and SupportTicket may be tool or schema names. Confirm their actual targets before creating duplicate functions.
 
-## Source status
+## Reconstructed code
 
-The original handler source files were not present in the GitHub repository tree when reviewed. The backend/lambdas/*/README.md files document intended responsibility and recovery checks only. They are not executable source code.
-
-## Recovery checklist
-
-For each deployed function, capture:
-- Exact Lambda function name and ARN (avoid committing account-specific identifiers unnecessarily).
-- Runtime, handler, architecture, memory, timeout, layers, and VPC settings.
-- Environment variable names; store secret values only in a secret manager, never Git.
-- IAM execution role and required permissions.
-- API Gateway route/method or Bedrock Action Group schema that invokes it.
-- Sanitized request event and response contract, including errors.
-- Data store names and primary-key schema.
-- Unit tests and deployment procedure.
-
-Retrieve source from Lambda export, prior branches/commits, or local backups. Do not replace a working deployed Lambda with guessed code.
+The repository contains new handlers under backend/lambdas. These are based on the evidence above, not original recovered source. Validate table keys, event formats, action-group schemas, authorization, and business rules before deployment.

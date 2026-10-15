@@ -6,8 +6,10 @@ Connect contact-flow events and should be validated against saved test events.
 """
 import json, os, uuid, logging
 import boto3
+from botocore.config import Config
 from retail_common import response
 logger=logging.getLogger(); logger.setLevel(os.getenv("LOG_LEVEL","INFO"))
+AWS_RETRY_CONFIG = Config(retries={"max_attempts": 4, "mode": "standard"})
 def _text(value):
     if isinstance(value,str): return value
     if value is None: return ""
@@ -47,7 +49,7 @@ def handler(event, context):
         if not agent_id or not alias_id:
             logger.error("BEDROCK_AGENT_ID / BEDROCK_AGENT_ALIAS_ID not configured")
             return response(500,{"success":False,"message":"AI service is not configured."})
-        result=boto3.client("bedrock-agent-runtime").invoke_agent(
+        result=boto3.client("bedrock-agent-runtime", config=AWS_RETRY_CONFIG).invoke_agent(
             agentId=agent_id, agentAliasId=alias_id, sessionId=session_id, inputText=message
         )
         chunks=[]
