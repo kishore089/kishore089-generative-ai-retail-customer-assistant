@@ -1,705 +1,91 @@
-Generative AI Retail Customer Assistant
+# Generative AI Retail Customer Assistant
 
-An AI-powered retail customer support and contact-center application built on AWS. The solution provides a unified web and voice experience for customers and support administrators, combining Generative AI, Retrieval-Augmented Generation (RAG), serverless backend services, authentication, and cloud contact-center capabilities.
+An AI-powered retail support application combining a React + TypeScript + Vite web experience, customer/admin dashboards, Amazon Lex V2, Amazon Connect, Amazon Bedrock Agents, retrieval-augmented generation (RAG), and serverless retail APIs.
 
-Architecture
+> **Important source status:** The original Lambda source was lost locally and in AWS. This repository now contains reconstructed Python handlers based on the available project progress reports, frontend contracts, prior project discussions, and the latest architecture diagram. They are not byte-for-byte recovery of the original code. Review [the reconstruction verification notes](docs/reconstruction-verification.md) before deployment.
 
-The following diagram shows the overall AWS architecture and the flow between the web application, voice/contact-center layer, Amazon Bedrock AI layer, knowledge base, backend services, and operational data.
+## Architecture
 
+See [docs/architecture.md](docs/architecture.md) for the updated AWS architecture and component responsibilities. The latest supplied architecture image is treated as the current design reference: Amazon S3 retail documents, Bedrock Knowledge Base, Titan Text Embeddings V2, and Amazon S3 Vectors. Earlier progress reports mention OpenSearch Serverless, but the later architecture image supersedes that for the current design.
 
+### Web and data flow
+1. Customers and admins use the React + Vite web application.
+2. The frontend calls REST endpoints through Amazon API Gateway.
+3. Backend Lambda functions read or update operational records in Amazon DynamoDB.
+4. Amazon Cognito is the intended web-user authentication integration.
 
-High-Level Flow
+### Voice and AI flow
+1. An incoming call enters an Amazon Connect contact flow.
+2. Amazon Lex V2, using the RetailShoppingAssistant bot, captures the customer's intent.
+3. RetailConnectBridge invokes the Bedrock Agent and returns the answer.
+4. The Bedrock Agent uses Agent Memory, Action Groups, and Guardrails as configured.
+5. Retail policy documents in Amazon S3 are retrieved through Amazon Bedrock Knowledge Bases, Titan Text Embeddings V2, and Amazon S3 Vectors.
+6. EscalationLambda supports the human-agent escalation path. Actual live transfer must be configured in the Connect flow.
 
-Web Customer / Admin
-        |
-        v
-React + Vite Frontend
-        |
-        +---------------------> Amazon Cognito
-        |
-        v
-Amazon API Gateway
-        |
-        v
-AWS Lambda Backend
-        |
-        v
-Amazon DynamoDB
-        |
-        +----------------------------------+
-                                           |
-Voice Customer                             |
-    |                                      |
-    v                                      |
-Amazon Connect                             |
-    |                                      |
-    v                                      |
-Amazon Lex V2                              |
-    |                                      |
-    v                                      |
-RetailConnectBridge Lambda <---------------+
-    |
-    v
-Amazon Bedrock Agent
-    |
-    +---- Agent Memory
-    +---- Agent Action Groups
-    +---- Bedrock Guardrails
-    |
-    v
-Amazon Bedrock Knowledge Base
-    |
-    +---- Titan Text Embeddings V2
-    |
-    v
-Amazon S3 Vectors
+## Capabilities represented in the project
+- Customer and admin dashboards
+- Customer profile lookup and admin customer search
+- Product and inventory lookup
+- Order lookup and order-status management
+- Payment, return, and support-ticket lookup
+- AI assistant via the Lex web-chat API
+- Retail policy and FAQ retrieval using RAG
+- Voice support through Amazon Connect and Lex V2
+- Bedrock Agent Action Groups, conversational memory, and Guardrails
+- Human-agent escalation
+- AI/contact-center analytics
+- Cognito authentication integration
 
-Key Features
+## Repository layout
 
-Customer authentication with Amazon Cognito
+- src/ — React + TypeScript + Vite frontend
+- public/ — static frontend assets
+- docs/ — architecture, API contracts, reconstruction verification, and Lambda inventory
+- backend/lambdas/ — reconstructed Python handlers and shared helpers
+- backend/tests/ — backend tests
+- backend/scripts/ — Lambda ZIP packaging helper
+- backend/deployment/ — deployment guidance
+- .env.example — frontend environment-variable template
 
-Automatic customer identification using the authenticated customer's email
+## Frontend setup
 
-Customer profile management and lookup
+Prerequisite: a Node.js version compatible with the Vite version in package.json.
 
-Product search and product information
+    npm install
 
-Inventory lookup
+Copy .env.example to .env.local and provide values for your own environment. Do not commit .env.local or credentials.
 
-Order status and order management
+    npm run dev
+    npm run lint
+    npm run build
 
-Payment information and payment-method support
+Frontend environment variable names include VITE_API_BASE_URL, VITE_LEX_API_URL, VITE_COGNITO_USER_POOL_ID, VITE_COGNITO_CLIENT_ID, and VITE_COGNITO_REGION. Only public frontend configuration belongs in Vite variables. Never put AWS access keys, secret keys, passwords, or server-side credentials in a Vite variable.
 
-Return and exchange support
+## Frontend API areas
 
-Support-ticket lookup
+The frontend service modules reference /customer, /customer-search, /products, /orders, /orders/{OrdersID}/status, /payments, /returns, /support, /analytics, and /lex. See [docs/frontend-backend-contracts.md](docs/frontend-backend-contracts.md). These routes document frontend expectations, not proof that API Gateway integrations are deployed.
 
-AI-powered retail customer assistance
+## Lambda reconstruction and validation
 
-Retrieval-Augmented Generation (RAG)
+The handlers are reconstructed implementations. We verified their stated responsibilities against the available project reports and current frontend contracts, but some original implementation details were not preserved:
+- DynamoDB primary keys, sort keys, GSIs, and exact attribute names
+- Exact Bedrock Action Group schemas and target mappings
+- AIAnalytics source table and metric definitions
+- Cognito authorizer and role/ownership rules
+- Order cancellation policy and allowed status transitions
+- Exact Lex/Connect event mapping and human-agent transfer behavior
 
-Conversational context through Bedrock Agent Memory
+Read [docs/reconstruction-verification.md](docs/reconstruction-verification.md), [docs/lambda-inventory.md](docs/lambda-inventory.md), and [docs/frontend-backend-contracts.md](docs/frontend-backend-contracts.md). Do not deploy to production until the checks listed there pass.
 
-Bedrock Agent Action Groups for backend operations
+## Security
+- Never commit .env files, AWS credentials, Cognito secrets, API keys, or real customer data.
+- Use least-privilege IAM permissions.
+- Enforce customer-level authorization in backend handlers; a customer ID supplied by the browser is not proof of identity.
+- Avoid logging passwords, tokens, full payment details, or personally identifiable information.
+- Keep test fixtures synthetic and sanitized.
 
-Bedrock Guardrails for AI response controls
+## Technology stack
 
-Voice-based customer support using Amazon Connect and Amazon Lex V2
+React, TypeScript, Vite, React Router, TanStack Query, Axios, Tailwind CSS, AWS Amplify libraries, Amazon API Gateway, AWS Lambda, Amazon DynamoDB, Amazon Cognito, Amazon Lex V2, Amazon Connect, Amazon Bedrock Agents, Bedrock Guardrails, Amazon Bedrock Knowledge Bases, Amazon S3, Amazon S3 Vectors, and Amazon Titan Text Embeddings V2.
 
-Human-agent escalation flow
-
-Serverless REST/HTTP APIs
-
-DynamoDB-based operational data storage
-
-CI/CD-style frontend deployment through AWS Amplify
-
-AWS Services Used
-
-1. Amazon Bedrock
-
-Used as the Generative AI foundation of the application.
-
-Amazon Bedrock Agent
-
-The Bedrock Agent acts as the AI assistant's reasoning and orchestration layer. It interprets customer requests and determines whether to retrieve knowledge or invoke backend actions.
-
-Agent Memory
-
-Maintains relevant conversation context so the assistant can provide more consistent responses during an interaction.
-
-Agent Action Groups
-
-Connects the Bedrock Agent with backend Lambda functions for operations such as:
-
-Customer lookup
-
-Product lookup
-
-Inventory lookup
-
-Payment lookup
-
-Return lookup
-
-Support-ticket lookup
-
-Other retail utilities
-
-Amazon Bedrock Guardrails
-
-Provides controls for AI-generated responses, including content and data protection policies.
-
-2. Amazon Bedrock Knowledge Bases
-
-Used to implement Retrieval-Augmented Generation (RAG).
-
-Retail documents are stored in Amazon S3 and indexed through the Bedrock Knowledge Base. Relevant information can then be retrieved and supplied to the Bedrock Agent before generating a response.
-
-RAG Flow
-
-Retail Documents
-       |
-       v
-Amazon S3
-       |
-       v
-Amazon Bedrock Knowledge Base
-       |
-       v
-Titan Text Embeddings V2
-       |
-       v
-Amazon S3 Vectors
-       |
-       v
-Retrieved Context
-       |
-       v
-Amazon Bedrock Agent
-
-3. Amazon S3
-
-Used to store retail documents used by the Bedrock Knowledge Base.
-
-4. Amazon S3 Vectors
-
-Used as the vector store for embeddings generated for the knowledge-base documents.
-
-5. Amazon Titan Text Embeddings V2
-
-Used to generate vector embeddings for retail documents so that semantically relevant information can be retrieved through the Knowledge Base.
-
-6. Amazon Connect
-
-Used as the cloud contact-center and voice interaction layer.
-
-The solution includes:
-
-Incoming customer calls
-
-Contact flows
-
-Queues
-
-Routing profiles
-
-Quick Connect
-
-Hours of operation
-
-AI-assisted responses
-
-Human-agent escalation
-
-7. Amazon Lex V2
-
-Used for conversational interaction and voice/chat intent handling.
-
-Bot:
-
-RetailShoppingAssistant
-
-Example intents include:
-
-ExpressDelivery
-CancelOrder
-ExchangePolicy
-CustomerProfile
-PaymentMethods
-ProductSearch
-ContactSupport
-OrderStatus
-ShippingPolicy
-ShippingCost
-StoreLocation
-FallbackIntent
-BusinessHours
-Offers
-DeliveryTime
-Exit
-ReturnPolicy
-Warranty
-Greeting
-LiveAgent
-
-8. AWS Lambda
-
-Lambda provides the serverless backend and connects the application's APIs, Bedrock Agent Action Groups, and Amazon Connect integration.
-
-Retail Backend Lambda Functions
-
-User Login Lambda
-
-Customer Lookup Lambda
-
-Product Lookup Lambda
-
-Inventory Lookup Lambda
-
-Payment Lookup Lambda
-
-Return Lookup Lambda
-
-Support Ticket Lookup Lambda
-
-Other Utility Lambda
-
-RetailConnectBridge Lambda
-
-Acts as the integration bridge between Amazon Connect/Lex and the Amazon Bedrock Agent.
-
-Escalation Lambda
-
-Handles escalation from AI-assisted conversations to a human support agent when required.
-
-9. Amazon API Gateway
-
-Provides the API layer between the React frontend and the serverless backend Lambda functions.
-
-Example API areas include:
-
-/customer
-/products
-/orders
-/inventory
-/payments
-/returns
-/support
-/analytics
-/lex
-
-10. Amazon DynamoDB
-
-Used for operational retail data.
-
-The solution contains tables for:
-
-Customers
-Products
-Orders
-Inventory
-Payments
-Returns
-SupportTickets
-
-11. Amazon Cognito
-
-Used for customer authentication and account management.
-
-Authentication Flow
-
-Customer
-   |
-   v
-React Frontend
-   |
-   v
-Amazon Cognito
-   |
-   v
-Authenticated User
-   |
-   v
-Customer Identification
-   |
-   v
-Customer Dashboard
-
-Customer credentials are managed by Cognito rather than being stored in DynamoDB.
-
-12. AWS Amplify
-
-Used to host and deploy the React + Vite frontend.
-
-The GitHub repository is connected to Amplify so that the application can be built and deployed from the main branch.
-
-Amplify Build Configuration
-
-Build command:
-npm run build
-
-Build output directory:
-dist
-
-Deployment flow:
-
-GitHub
-   |
-   v
-AWS Amplify
-   |
-   v
-npm install
-   |
-   v
-npm run build
-   |
-   v
-dist/
-   |
-   v
-Amplify Hosting
-
-Frontend Technology Stack
-
-The web application is built using:
-
-React
-
-TypeScript
-
-Vite
-
-React Router
-
-Tailwind CSS
-
-HeroUI
-
-Axios
-
-AWS Amplify
-
-Amazon Cognito
-
-Frontend Structure
-
-src/
-├── assets/
-├── components/
-├── config/
-├── contexts/
-├── hooks/
-├── layouts/
-├── pages/
-├── routes/
-├── services/
-├── styles/
-├── types/
-├── utils/
-├── App.tsx
-├── index.css
-└── main.tsx
-
-Prerequisites
-
-Install the following before running the project locally:
-
-Node.js 20+ recommended
-
-npm
-
-Git
-
-An AWS account with access to the required AWS resources
-
-Verify the installations:
-
-node --version
-npm --version
-git --version
-
-Installation
-
-Clone the repository:
-
-git clone https://github.com/kishore089/kishore089-generative-ai-retail-customer-assistant.git
-
-Navigate to the project:
-
-cd kishore089-generative-ai-retail-customer-assistant
-
-Install all frontend dependencies:
-
-npm install
-
-npm install reads package.json and installs the required React, TypeScript, Vite, AWS Amplify, Axios, UI, routing, and development dependencies.
-
-Environment Variables
-
-Create a .env file in the project root.
-
-VITE_API_BASE_URL=https://YOUR_API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com/prod
-VITE_LEX_API_URL=https://YOUR_API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com/prod/lex
-
-VITE_COGNITO_USER_POOL_ID=YOUR_COGNITO_USER_POOL_ID
-VITE_COGNITO_CLIENT_ID=YOUR_COGNITO_CLIENT_ID
-VITE_COGNITO_REGION=us-east-1
-
-The .env file should never be committed to GitHub.
-
-Use .env.example to document the required variables.
-
-Run the Application Locally
-
-Start the Vite development server:
-
-npm run dev
-
-The application will normally be available at:
-
-http://localhost:5173
-
-Production Build
-
-Build the application:
-
-npm run build
-
-The production files are generated in:
-
-dist/
-
-Preview the production build:
-
-npm run preview
-
-Git Workflow
-
-After making changes:
-
-git status
-
-Stage changes:
-
-git add .
-
-Commit changes:
-
-git commit -m "Update retail assistant"
-
-Push to GitHub:
-
-git push origin main
-
-When connected to AWS Amplify, pushing changes to the configured branch can trigger a new frontend deployment.
-
-Application Interaction Flows
-
-Web Customer Flow
-
-Customer
-   |
-   v
-React + Vite
-   |
-   v
-Amazon Cognito
-   |
-   v
-Automatic Customer Identification
-   |
-   v
-Customer Dashboard
-   |
-   v
-Amazon API Gateway
-   |
-   v
-AWS Lambda
-   |
-   v
-Amazon DynamoDB
-
-AI Assistant Flow
-
-Customer Request
-      |
-      v
-React AI Assistant / Voice Interaction
-      |
-      v
-Amazon Bedrock Agent
-      |
-      +---- Knowledge Base / RAG
-      |
-      +---- Agent Action Groups
-      |
-      +---- Agent Memory
-      |
-      +---- Bedrock Guardrails
-      |
-      v
-AI Response
-
-Voice Flow
-
-Incoming Customer Call
-        |
-        v
-Amazon Connect
-        |
-        v
-Amazon Lex V2
-        |
-        v
-RetailConnectBridge Lambda
-        |
-        v
-Amazon Bedrock Agent
-        |
-        +---- Backend Lambda Actions
-        |
-        +---- Knowledge Base
-        |
-        v
-AI Response
-        |
-        +---- Customer Resolution
-        |
-        └---- Human Agent Escalation
-
-Security
-
-The application uses Amazon Cognito for authentication and AWS managed services for the backend.
-
-Recommended production practices include:
-
-Keep .env files out of source control
-
-Never commit AWS access keys or secret credentials
-
-Use IAM roles and least-privilege permissions
-
-Protect API Gateway endpoints with Cognito authorization
-
-Apply appropriate CORS policies
-
-Restrict S3 and DynamoDB access
-
-Use Bedrock Guardrails for AI safety
-
-Enable CloudWatch logging and monitoring
-
-Use HTTPS for production traffic
-
-Future Enhancements
-
-The architecture can be extended with:
-
-Amazon Connect Contact Lens for advanced conversation analytics
-
-Amazon CloudWatch for centralized monitoring and logs
-
-AWS IAM for more granular access control
-
-Amazon SNS / Amazon SES for notifications
-
-Advanced customer analytics
-
-Additional AI-powered retail workflows
-
-Improved human-agent handoff
-
-Production-grade API authorization
-
-Additional monitoring and observability
-
-Project Objective
-
-The goal of this project is to demonstrate how Generative AI, RAG, serverless computing, authentication, and cloud contact-center services can be combined to build an intelligent retail customer-support platform.
-
-The solution brings together:
-
-Web + Voice + Generative AI + RAG + Customer Data + Serverless Backend + Contact Center
-
-Technology Summary
-
-Layer
-
-Technologies
-
-Frontend
-
-React, TypeScript, Vite
-
-UI
-
-Tailwind CSS, HeroUI
-
-Routing
-
-React Router
-
-HTTP Client
-
-Axios
-
-Authentication
-
-Amazon Cognito
-
-AI
-
-Amazon Bedrock
-
-AI Agent
-
-Amazon Bedrock Agents
-
-AI Memory
-
-Bedrock Agent Memory
-
-AI Tools
-
-Bedrock Agent Action Groups
-
-AI Safety
-
-Bedrock Guardrails
-
-RAG
-
-Amazon Bedrock Knowledge Bases
-
-Embeddings
-
-Amazon Titan Text Embeddings V2
-
-Vector Store
-
-Amazon S3 Vectors
-
-Documents
-
-Amazon S3
-
-Voice Contact Center
-
-Amazon Connect
-
-Conversational AI
-
-Amazon Lex V2
-
-Backend
-
-AWS Lambda
-
-API
-
-Amazon API Gateway
-
-Database
-
-Amazon DynamoDB
-
-Hosting
-
-AWS Amplify
-
-Source Control
-
-GitHub
-
-Repository
-
-GitHub:
-
-https://github.com/kishore089/kishore089-generative-ai-retail-customer-assistant
-
-License
-
-This project is intended for educational, internship, demonstration, and proof-of-concept purposes.
+Contact Lens, CloudWatch, IAM, and SNS/SES are shown as optional/future enhancements in the latest architecture. A service should be considered implemented only when its configuration and source are present and tested.
