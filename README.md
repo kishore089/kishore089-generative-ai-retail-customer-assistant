@@ -7,7 +7,6 @@
 <img alt="AI" src="https://img.shields.io/badge/AI-Bedrock%20Agents%20(Classic)-7B61FF">
 <img alt="Frontend" src="https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-3178C6?logo=typescript&logoColor=white">
 <img alt="Backend" src="https://img.shields.io/badge/Backend-Python%20Lambda-3776AB?logo=python&logoColor=white">
-<img alt="Status" src="https://img.shields.io/badge/Status-Reconstruction%20needs%20validation-yellow">
 </p>
 
 ---
@@ -27,7 +26,67 @@ The Retail Customer Assistant is designed to help shoppers and support teams han
 
 ## 🏗️ AWS architecture
 
-![Retail AI Contact Center — AWS Architecture](docs/architecture.svg)
+```mermaid
+flowchart LR
+  subgraph Client["Client Layer"]
+    User["Customer / Admin Users"]
+    Web["React + Vite Web Application"]
+    Cognito["Amazon Cognito\nAuthentication"]
+    User --> Web
+    Web <--> Cognito
+  end
+
+  subgraph Conversation["Conversation Layer"]
+    Connect["Amazon Connect\nContact Flow"]
+    Lex["Amazon Lex V2\nRetailShoppingAssistant · 20 intents"]
+    Bridge["RetailConnectBridge Lambda"]
+    Escalation["Escalation Lambda\nHuman agent"]
+    Connect --> Lex --> Bridge
+    Lex -. Escalation .-> Escalation
+  end
+
+  subgraph AI["Amazon Bedrock AI Layer"]
+    Agent["Bedrock Agent (Classic)"]
+    Memory["Agent Memory"]
+    Actions["Agent Action Groups"]
+    Guardrails["Bedrock Guardrails"]
+    Agent <--> Memory
+    Agent --> Actions
+    Agent --> Guardrails
+  end
+
+  subgraph KB["Knowledge Base / RAG"]
+    S3["Amazon S3\nRetail Documents"]
+    Knowledge["Amazon Bedrock Knowledge Base"]
+    Embeddings["Titan Text Embeddings V2"]
+    Vectors["Amazon S3 Vectors"]
+    S3 --> Knowledge --> Embeddings --> Vectors
+  end
+
+  subgraph Backend["Retail Backend"]
+    APIGW["Amazon API Gateway"]
+    Lambdas["Retail Backend Lambda Functions\nCustomer · Product · Orders · Inventory\nPayments · Returns · Support · Utilities"]
+    DB[("Amazon DynamoDB\nUsers · Customers · Orders · Returns\nPayments · SupportTickets · Products · Inventory")]
+    APIGW --> Lambdas
+    Lambdas <--> DB
+  end
+
+  Web --> APIGW
+  Bridge <--> Agent
+  Actions --> Lambdas
+  Agent <--> Knowledge
+
+  classDef client fill:#edf5ff,stroke:#77a9ff,color:#17213c;
+  classDef conversation fill:#f5f0ff,stroke:#a78bfa,color:#17213c;
+  classDef ai fill:#ecfdf8,stroke:#2dd4bf,color:#17213c;
+  classDef knowledge fill:#fff1f5,stroke:#fb7185,color:#17213c;
+  classDef backend fill:#fff7ed,stroke:#fb923c,color:#17213c;
+  class Web,Cognito,User client;
+  class Connect,Lex,Bridge,Escalation conversation;
+  class Agent,Memory,Actions,Guardrails ai;
+  class S3,Knowledge,Embeddings,Vectors knowledge;
+  class APIGW,Lambdas,DB backend;
+```
 
 **[Architecture notes](docs/architecture.md)** · **[Agent Classic master prompt — Product Routing v5.0](docs/agent-classic-master-prompt.md)**
 
