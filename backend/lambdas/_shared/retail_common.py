@@ -1,7 +1,8 @@
 """Shared helpers for reconstructed Retail Customer Assistant Lambda handlers.
 
-Package this file with a handler when creating a deployment ZIP. All table names
-and key names are configurable because the original deployed schemas were lost.
+The original source and full DynamoDB schemas were lost. Keep unknown table/key
+names configurable, and validate these helpers against the real integration
+events before deployment.
 """
 import json
 import os
@@ -10,10 +11,13 @@ from decimal import Decimal
 from typing import Any
 
 import boto3
-from boto3.dynamodb.conditions import Attr, Key
+from botocore.config import Config
+from boto3.dynamodb.conditions import Attr
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
+
+AWS_RETRY_CONFIG = Config(retries={"max_attempts": 4, "mode": "standard"})
 
 def json_default(value: Any):
     if isinstance(value, Decimal):
@@ -21,9 +25,16 @@ def json_default(value: Any):
     raise TypeError(f"Unsupported JSON value: {type(value).__name__}")
 
 def response(status_code: int, body: Any, headers: dict | None = None) -> dict:
+    origin = os.getenv("CORS_ALLOW_ORIGIN", "*")
     return {
         "statusCode": status_code,
-        "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": os.getenv("CORS_ALLOW_ORIGIN", "*"), **(headers or {})},
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Headers": "Content-Type,Authorization",
+            "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+            **(headers or {}),
+        },
         "body": json.dumps(body, default=json_default),
     }
 
@@ -37,6 +48,7 @@ def parse_body(event: dict) -> dict:
     return body if isinstance(body, dict) else {}
 
 def parameters(event: dict) -> dict:
+    """Flatten common API Gateway and Bedrock Action Group parameter formats."""
     result = {}
     for p in event.get("parameters", []) or []:
         if isinstance(p, dict) and p.get("name"):
@@ -44,21 +56,33 @@ def parameters(event: dict) -> dict:
     result.update(event.get("queryStringParameters") or {})
     result.update(event.get("pathParameters") or {})
     result.update(parse_body(event))
+    request_body = event.get("requestBody") or {}
+    content = request_body.get("content") or {}
+    for media in content.values():
+        props = media.get("properties") or []
+        if isinstance(props, list):
+            for prop in props:
+                if isinstance(prop, dict) and prop.get("name"):
+                    result[prop["name"]] = prop.get("value")
+        elif isinstance(props, dict):
+            result.update(props)
     return result
 
 def dynamodb_table(table_env: str, default_name: str):
     name = os.getenv(table_env, default_name)
-    return boto3.resource("dynamodb").Table(name)
+    resource = boto3.resource("dynamodb", config=AWS_RETRY_CONFIG)
+    return resource.Table(name)
 
 def item_to_json(item):
     return json.loads(json.dumps(item, default=json_default)) if item is not None else None
 
 def find_record(table, params: dict, key_fields: tuple[str, ...]):
-    """Prefer exact key lookups; otherwise perform a bounded attribute scan.
+    """Best-effort recovery lookup.
 
-    Set the table's actual key field through environment variables where possible.
-    Scans are a recovery fallback and should be replaced by indexed queries for
-    production workloads.
+    WARNING: actual partition/sort keys are unknown. The helper tries direct key
+    reads and then a bounded scan. A scan is not an appropriate production
+    replacement for known primary keys or GSIs and may miss records beyond the
+    evaluated page. Configure the correct key/index before production use.
     """
     for field in key_fields:
         value = params.get(field)
