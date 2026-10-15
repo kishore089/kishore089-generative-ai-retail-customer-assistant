@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+<title id="title">Retail AI Contact Center — AWS Architecture</title>
+<desc id="desc">Retail customer assistant architecture showing web and voice clients, Connect and Lex, a Bedrock Agent Classic, Knowledge Base using S3 and S3 Vectors, backend Lambda functions, API Gateway, DynamoDB, and optional services.</desc>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fbff"/><stop offset="1" stop-color="#f2f5ff"/></linearGradient>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4f46e5"/></marker>
+<marker id="teal" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#0f9488"/></marker>
+<marker id="orange" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f97316"/></marker>
+<marker id="pink" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#db2777"/></marker>
+<style>text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#17213c}.title{font-size:30px;font-weight:750}.subtitle{font-size:14px;fill:#596780}.head{font-size:17px;font-weight:700}.label{font-size:13px;font-weight:650}.small{font-size:11.5px}.tiny{font-size:10px}.lane{stroke-width:1.5;rx:16}.box{fill:#fff;stroke-width:1.4;rx:9}.flow{fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}</style>
+</defs>
+<rect width="1400" height="900" fill="url(#bg)"/>
+<text x="28" y="43" class="title">Retail AI Contact Center</text>
+<text x="29" y="68" class="subtitle">Generative AI Retail Customer Assistant · Updated AWS architecture · Bedrock Agents (Classic)</text>
+
+<rect x="22" y="92" width="250" height="445" class="lane" fill="#edf5ff" stroke="#77a9ff"/>
+<text x="40" y="121" class="head">1 · Client Layer</text>
+<rect x="42" y="143" width="210" height="160" class="box" stroke="#77a9ff"/>
+<text x="147" y="168" text-anchor="middle" class="label">Web Application</text>
+<rect x="58" y="181" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="201" text-anchor="middle" class="small">React + Vite Frontend</text>
+<rect x="58" y="219" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="239" text-anchor="middle" class="small">Customer Dashboard</text>
+<rect x="58" y="257" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="277" text-anchor="middle" class="small">Admin + AI Assistant</text>
+<rect x="42" y="325" width="210" height="185" class="box" stroke="#77a9ff"/>
+<text x="147" y="350" text-anchor="middle" class="label">Amazon Connect</text>
+<rect x="58" y="363" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="383" text-anchor="middle" class="small">Incoming Customer Call</text>
+<rect x="58" y="401" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="421" text-anchor="middle" class="small">Contact Flow · Queues</text>
+<rect x="58" y="439" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="459" text-anchor="middle" class="small">Routing · Quick Connect</text>
+<text x="147" y="490" text-anchor="middle" class="tiny">Hours of Operation</text>
+
+<rect x="290" y="92" width="285" height="445" class="lane" fill="#f5f0ff" stroke="#a78bfa"/>
+<text x="308" y="121" class="head">2 · Conversation Layer</text>
+<rect x="312" y="143" width="241" height="58" class="box" stroke="#a78bfa"/><text x="432" y="166" text-anchor="middle" class="label">Amazon Connect Contact Flow</text><text x="432" y="185" text-anchor="middle" class="small">Welcome → Lex → Bridge → Response</text>
+<rect x="312" y="218" width="241" height="72" class="box" stroke="#a78bfa"/><text x="432" y="242" text-anchor="middle" class="label">Amazon Lex V2</text><text x="432" y="261" text-anchor="middle" class="small">RetailShoppingAssistant</text><text x="432" y="278" text-anchor="middle" class="small">20 retail intents</text>
+<rect x="312" y="307" width="241" height="60" class="box" stroke="#a78bfa"/><text x="432" y="331" text-anchor="middle" class="label">RetailConnectBridge Lambda</text><text x="432" y="350" text-anchor="middle" class="small">Invokes Bedrock Agent</text>
+<rect x="312" y="384" width="114" height="48" class="box" stroke="#a78bfa"/><text x="369" y="404" text-anchor="middle" class="small">AI Response</text><text x="369" y="419" text-anchor="middle" class="small">Prompt</text>
+<rect x="438" y="384" width="115" height="48" class="box" stroke="#fb923c"/><text x="495" y="404" text-anchor="middle" class="small">Escalation</text><text x="495" y="419" text-anchor="middle" class="small">Lambda</text>
+<rect x="312" y="449" width="241" height="48" class="box" stroke="#a78bfa"/><text x="432" y="470" text-anchor="middle" class="small">Error Prompt · Disconnect</text><text x="432" y="486" text-anchor="middle" class="tiny">Connect flow controls handoff</text>
+
+<rect x="593" y="92" width="275" height="445" class="lane" fill="#ecfdf8" stroke="#2dd4bf"/>
+<text x="611" y="121" class="head">3 · Bedrock AI Layer</text>
+<rect x="615" y="148" width="231" height="58" class="box" stroke="#2dd4bf" fill="#e0fbf5"/><text x="730" y="172" text-anchor="middle" class="label">Amazon Bedrock Agent</text><text x="730" y="190" text-anchor="middle" class="small">Agent Classic</text>
+<rect x="615" y="225" width="231" height="50" class="box" stroke="#2dd4bf"/><text x="730" y="246" text-anchor="middle" class="label">Agent Memory</text><text x="730" y="263" text-anchor="middle" class="small">Conversation context</text>
+<rect x="615" y="294" width="231" height="58" class="box" stroke="#2dd4bf"/><text x="730" y="317" text-anchor="middle" class="label">Agent Action Groups</text><text x="730" y="336" text-anchor="middle" class="small">Invoke backend functions</text>
+<rect x="615" y="371" width="231" height="54" class="box" stroke="#2dd4bf"/><text x="730" y="393" text-anchor="middle" class="label">Bedrock Guardrails</text><text x="730" y="411" text-anchor="middle" class="small">Content filters · PII · topics</text>
+<path d="M730 206 V225 M730 275 V294 M730 352 V371" class="flow" stroke="#0f9488" marker-end="url(#teal)"/>
+
+<rect x="886" y="92" width="492" height="445" class="lane" fill="#fff1f5" stroke="#fb7185"/>
+<text x="906" y="121" class="head">4 · Knowledge Base / RAG</text>
+<rect x="926" y="148" width="410" height="54" class="box" stroke="#fb7185"/><text x="1131" y="170" text-anchor="middle" class="label">Amazon S3</text><text x="1131" y="187" text-anchor="middle" class="small">Retail policy documents</text>
+<rect x="926" y="222" width="410" height="54" class="box" stroke="#fb7185"/><text x="1131" y="244" text-anchor="middle" class="label">Amazon Bedrock Knowledge Base</text><text x="1131" y="261" text-anchor="middle" class="small">Document retrieval / RAG</text>
+<rect x="926" y="296" width="410" height="54" class="box" stroke="#fb7185"/><text x="1131" y="318" text-anchor="middle" class="label">Titan Text Embeddings V2</text><text x="1131" y="335" text-anchor="middle" class="small">Text embeddings</text>
+<rect x="926" y="370" width="410" height="54" class="box" stroke="#fb7185"/><text x="1131" y="392" text-anchor="middle" class="label">Amazon S3 Vectors</text><text x="1131" y="409" text-anchor="middle" class="small">Vector store</text>
+<path d="M1131 202 V222 M1131 276 V296 M1131 350 V370" class="flow" stroke="#db2777" marker-end="url(#pink)"/>
+<path d="M926 249 H895 V177 H846" class="flow" stroke="#db2777" marker-end="url(#pink)"/>
+
+<rect x="22" y="565" width="885" height="218" class="lane" fill="#fff7ed" stroke="#fb923c"/>
+<text x="40" y="594" class="head">5 · Retail Backend Lambda Functions</text>
+<rect x="42" y="615" width="190" height="48" class="box" stroke="#fb923c"/><text x="137" y="635" text-anchor="middle" class="label">Login · Customer</text><text x="137" y="651" text-anchor="middle" class="small">Profile · Search</text>
+<rect x="244" y="615" width="190" height="48" class="box" stroke="#fb923c"/><text x="339" y="635" text-anchor="middle" class="label">Product · Inventory</text><text x="339" y="651" text-anchor="middle" class="small">Search · Stock</text>
+<rect x="446" y="615" width="190" height="48" class="box" stroke="#fb923c"/><text x="541" y="635" text-anchor="middle" class="label">Orders · CancelOrder</text><text x="541" y="651" text-anchor="middle" class="small">Lookup · Status update</text>
+<rect x="648" y="615" width="238" height="48" class="box" stroke="#fb923c"/><text x="767" y="635" text-anchor="middle" class="label">Payment · Return · Support</text><text x="767" y="651" text-anchor="middle" class="small">AIAnalytics · Utility</text>
+<rect x="42" y="681" width="844" height="76" class="box" stroke="#fb923c"/><text x="464" y="706" text-anchor="middle" class="label">Amazon API Gateway + Shared Lambda Helpers</text><text x="464" y="728" text-anchor="middle" class="small">Action Groups read/write operational records</text><text x="464" y="746" text-anchor="middle" class="small">RetailConnectBridge · Escalation · Lex API · CancelOrder</text>
+
+<rect x="925" y="565" width="453" height="218" class="lane" fill="#eff6ff" stroke="#60a5fa"/><text x="945" y="594" class="head">6 · DynamoDB Operational Data</text>
+<g class="small" text-anchor="middle"><rect x="950" y="615" width="185" height="38" rx="14" fill="#fff" stroke="#60a5fa"/><text x="1042" y="639">Users · Customers</text><rect x="1150" y="615" width="205" height="38" rx="14" fill="#fff" stroke="#60a5fa"/><text x="1252" y="639">Orders · Returns</text><rect x="950" y="666" width="185" height="38" rx="14" fill="#fff" stroke="#60a5fa"/><text x="1042" y="690">Payments</text><rect x="1150" y="666" width="205" height="38" rx="14" fill="#fff" stroke="#60a5fa"/><text x="1252" y="690">SupportTickets</text><rect x="950" y="717" width="185" height="38" rx="14" fill="#fff" stroke="#60a5fa"/><text x="1042" y="741">Products</text><rect x="1150" y="717" width="205" height="38" rx="14" fill="#fff" stroke="#60a5fa"/><text x="1252" y="741">Inventory</text></g>
+
+<path d="M272 275 H290 V255 H312 M432 201 V218 M432 290 V307" class="flow" stroke="#4f46e5" marker-end="url(#arrow)"/><path d="M553 338 H580 V177 H615" class="flow" stroke="#0f9488" marker-end="url(#teal)"/><path d="M730 352 V548 H464 V615" class="flow" stroke="#f97316" marker-end="url(#orange)"/><path d="M886 719 H925" class="flow" stroke="#f97316" marker-end="url(#orange)"/>
+
+<rect x="22" y="805" width="1356" height="65" rx="14" fill="#faf5ff" stroke="#a78bfa" stroke-dasharray="7 5"/><text x="42" y="829" class="label">Optional / Future Enhancements shown in the supplied design</text><text x="42" y="852" class="small">Amazon Connect Contact Lens</text><text x="300" y="852" class="small">Amazon CloudWatch</text><text x="520" y="852" class="small">Amazon Cognito</text><text x="720" y="852" class="small">AWS IAM</text><text x="900" y="852" class="small">Amazon SNS / SES</text><text x="1370" y="891" text-anchor="end" class="tiny">Design reference only · validate deployed AWS resources before production use</text>
+</svg>
