@@ -42,6 +42,7 @@ def parameters(event: dict) -> dict:
         if isinstance(p, dict) and p.get("name"):
             result[p["name"]] = p.get("value")
     result.update(event.get("queryStringParameters") or {})
+    result.update(event.get("pathParameters") or {})
     result.update(parse_body(event))
     return result
 
@@ -81,19 +82,29 @@ def find_record(table, params: dict, key_fields: tuple[str, ...]):
     return None
 
 def bedrock_agent_response(event: dict, result_text: str, session_attributes: dict | None = None):
-    """Format a Bedrock Agents Action Group function response."""
+    """Format either a Bedrock function-details or OpenAPI Action Group response."""
     action_group = event.get("actionGroup", "RetailBackend")
-    function_name = event.get("function", "lookup")
     message_version = event.get("messageVersion", "1.0")
+    if event.get("apiPath") and not event.get("function"):
+        response_obj = {
+            "actionGroup": action_group,
+            "apiPath": event.get("apiPath"),
+            "httpMethod": event.get("httpMethod", "GET"),
+            "httpStatusCode": 200,
+            "apiResponse": {
+                "httpStatusCode": 200,
+                "responseBody": {"application/json": {"body": result_text}},
+            },
+        }
+    else:
+        response_obj = {
+            "actionGroup": action_group,
+            "function": event.get("function", "lookup"),
+            "functionResponse": {"responseBody": {"TEXT": {"body": result_text}}},
+        }
     return {
         "messageVersion": message_version,
-        "response": {
-            "actionGroup": action_group,
-            "function": function_name,
-            "functionResponse": {
-                "responseBody": {"TEXT": {"body": result_text}}
-            },
-        },
+        "response": response_obj,
         "sessionAttributes": session_attributes or event.get("sessionAttributes", {}),
         "promptSessionAttributes": event.get("promptSessionAttributes", {}),
     }
