@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="810" viewBox="0 0 1400 810" role="img" aria-labelledby="title desc">
 <title id="title">Retail AI Contact Center — AWS Architecture</title>
-<desc id="desc">Retail customer assistant architecture showing web and voice clients, Connect and Lex, a Bedrock Agent Classic, Knowledge Base using S3 and S3 Vectors, backend Lambda functions, API Gateway, DynamoDB, and optional services.</desc>
+<desc id="desc">Retail customer assistant architecture showing web and voice clients, Connect and Lex, a Bedrock Agent Classic, Knowledge Base using S3 and S3 Vectors, backend Lambda functions, API Gateway, DynamoDB, and Amazon Cognito authentication in the web client.</desc>
 <defs>
 <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fbff"/><stop offset="1" stop-color="#f2f5ff"/></linearGradient>
 <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4f46e5"/></marker>
@@ -15,17 +15,18 @@
 
 <rect x="22" y="92" width="250" height="445" class="lane" fill="#edf5ff" stroke="#77a9ff"/>
 <text x="40" y="121" class="head">1 · Client Layer</text>
-<rect x="42" y="143" width="210" height="160" class="box" stroke="#77a9ff"/>
+<rect x="42" y="143" width="210" height="192" class="box" stroke="#77a9ff"/>
 <text x="147" y="168" text-anchor="middle" class="label">Web Application</text>
 <rect x="58" y="181" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="201" text-anchor="middle" class="small">React + Vite Frontend</text>
 <rect x="58" y="219" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="239" text-anchor="middle" class="small">Customer Dashboard</text>
 <rect x="58" y="257" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="277" text-anchor="middle" class="small">Admin + AI Assistant</text>
-<rect x="42" y="325" width="210" height="185" class="box" stroke="#77a9ff"/>
-<text x="147" y="350" text-anchor="middle" class="label">Amazon Connect</text>
-<rect x="58" y="363" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="383" text-anchor="middle" class="small">Incoming Customer Call</text>
-<rect x="58" y="401" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="421" text-anchor="middle" class="small">Contact Flow · Queues</text>
-<rect x="58" y="439" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="459" text-anchor="middle" class="small">Routing · Quick Connect</text>
-<text x="147" y="490" text-anchor="middle" class="tiny">Hours of Operation</text>
+<rect x="58" y="295" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="314" text-anchor="middle" class="small">Amazon Cognito · Auth</text>
+<rect x="42" y="345" width="210" height="170" class="box" stroke="#77a9ff"/>
+<text x="147" y="370" text-anchor="middle" class="label">Amazon Connect</text>
+<rect x="58" y="383" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="403" text-anchor="middle" class="small">Incoming Customer Call</text>
+<rect x="58" y="421" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="441" text-anchor="middle" class="small">Contact Flow · Queues</text>
+<rect x="58" y="459" width="178" height="30" class="box" stroke="#77a9ff"/><text x="147" y="479" text-anchor="middle" class="small">Routing · Quick Connect</text>
+<text x="147" y="510" text-anchor="middle" class="tiny">Hours of Operation</text>
 
 <rect x="290" y="92" width="285" height="445" class="lane" fill="#f5f0ff" stroke="#a78bfa"/>
 <text x="308" y="121" class="head">2 · Conversation Layer</text>
@@ -66,5 +67,5 @@
 
 <path d="M272 275 H290 V255 H312 M432 201 V218 M432 290 V307" class="flow" stroke="#4f46e5" marker-end="url(#arrow)"/><path d="M553 338 H580 V177 H615" class="flow" stroke="#0f9488" marker-end="url(#teal)"/><path d="M730 352 V548 H464 V615" class="flow" stroke="#f97316" marker-end="url(#orange)"/><path d="M886 719 H925" class="flow" stroke="#f97316" marker-end="url(#orange)"/>
 
-<rect x="22" y="805" width="1356" height="65" rx="14" fill="#faf5ff" stroke="#a78bfa" stroke-dasharray="7 5"/><text x="42" y="829" class="label">Optional / Future Enhancements shown in the supplied design</text><text x="42" y="852" class="small">Amazon Connect Contact Lens</text><text x="300" y="852" class="small">Amazon CloudWatch</text><text x="520" y="852" class="small">Amazon Cognito</text><text x="720" y="852" class="small">AWS IAM</text><text x="900" y="852" class="small">Amazon SNS / SES</text><text x="1370" y="891" text-anchor="end" class="tiny">Design reference only · validate deployed AWS resources before production use</text>
+<text x="1370" y="800" text-anchor="end" class="tiny">Design reference only · validate deployed AWS resources before production use</text>
 </svg>
