@@ -32,7 +32,7 @@ The Retail Customer Assistant is designed to help shoppers and support teams han
 
 | Flow | Path |
 |---|---|
-| Web | Customer/admin → React + Vite → API Gateway → Lambda → DynamoDB |
+| Web authentication | Customer/admin → React + Vite Web Application ↔ **Amazon Cognito** (authentication) |\n| Web data | React + Vite → API Gateway → Lambda → DynamoDB |
 | AI assistant | User message → Lex / web chat API → RetailConnectBridge → Bedrock Agent Classic → Action Group and/or Knowledge Base |
 | Voice | Incoming call → Amazon Connect contact flow → Lex V2 → bridge/agent response → configured escalation path |
 | Retail knowledge | S3 retail documents → Bedrock Knowledge Base → Titan Text Embeddings V2 → Amazon S3 Vectors |
